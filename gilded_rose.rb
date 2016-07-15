@@ -1,15 +1,10 @@
-class UpdateItem
+class ItemUpdater
   attr_reader :item
 
   def initialize(item)
     @item = item
   end
 
-  def call
-    update
-  end
-
-  private
   def update
     item.quality += quality_modifier
     item.sell_in += sell_in_modifier
@@ -18,8 +13,9 @@ class UpdateItem
     item.quality = 0 if item.quality < 0
   end
 
+  private
   def quality_modifier
-    return item.sell_in < 1 ? -2 : -1
+    item.sell_in < 1 ? -2 : -1
   end
 
   def sell_in_modifier
@@ -27,7 +23,7 @@ class UpdateItem
   end
 end
 
-class UpdateAgedBrie < UpdateItem
+class AgedBrieUpdater < ItemUpdater
 
   private
   def quality_modifier
@@ -35,14 +31,12 @@ class UpdateAgedBrie < UpdateItem
   end
 end
 
-class UpdateLegendary < UpdateItem
-
-  private
+class LegendaryUpdater < ItemUpdater
   def update
   end
 end
 
-class UpdateBackstagePasses < UpdateItem
+class BackstagePassUpdater < ItemUpdater
 
   private
   def quality_modifier
@@ -53,7 +47,7 @@ class UpdateBackstagePasses < UpdateItem
   end
 end
 
-class UpdateConjured < UpdateItem
+class ConjuredUpdater < ItemUpdater
 
   private
   def quality_modifier
@@ -61,28 +55,28 @@ class UpdateConjured < UpdateItem
   end
 end
 
-class ItemUpdater
+class UpdateItem
   def self.call(item)
     updater = case item.name
     when "Aged Brie"
-      UpdateAgedBrie.new(item)
+      AgedBrieUpdater.new(item)
     when "Sulfuras, Hand of Ragnaros"
-      UpdateLegendary.new(item)
+      LegendaryUpdater.new(item)
     when "Backstage passes to a TAFKAL80ETC concert"
-      UpdateBackstagePasses.new(item)
-    when /Conjured/
-      UpdateConjured.new(item)
+      BackstagePassUpdater.new(item)
+    when /^Conjured /
+      ConjuredUpdater.new(item)
     else
-      UpdateItem.new(item)
+      ItemUpdater.new(item)
     end
 
-    updater.call
+    updater.update
   end
 end
 
 def update_quality(items)
   items.each do |item|
-    ItemUpdater.call(item)
+    UpdateItem.(item)
   end
 end
 
