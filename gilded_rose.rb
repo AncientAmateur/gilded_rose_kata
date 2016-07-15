@@ -6,15 +6,20 @@ class UpdateItem
   end
 
   def call
-    item.quality += quality_modifier
-    item.sell_in += sell_in_modifier
+    update
   end
 
   private
+  def update
+    item.quality += quality_modifier
+    item.sell_in += sell_in_modifier
+
+    item.quality = 50 if item.quality > 50
+    item.quality = 0 if item.quality < 0
+  end
+
   def quality_modifier
-    return 0 if item.quality < 1
-    return -2 if item.sell_in < 1
-    -1
+    return item.sell_in < 1 ? -2 : -1
   end
 
   def sell_in_modifier
@@ -26,21 +31,14 @@ class UpdateAgedBrie < UpdateItem
 
   private
   def quality_modifier
-    return 0 if item.quality >= 50
-    return 2 if item.sell_in < 1 && item.quality < 49
-    1
+    item.sell_in < 1 ? 2 : 1
   end
 end
 
 class UpdateLegendary < UpdateItem
 
   private
-  def quality_modifier
-    0
-  end
-
-  def sell_in_modifier
-    0
+  def update
   end
 end
 
@@ -49,7 +47,6 @@ class UpdateBackstagePasses < UpdateItem
   private
   def quality_modifier
     return -item.quality if item.sell_in < 1
-    return 0 if item.quality >= 50
     return 2 if (6..10).include? item.sell_in
     return 3 if (1..5).include? item.sell_in
     1
@@ -60,9 +57,7 @@ class UpdateConjured < UpdateItem
 
   private
   def quality_modifier
-    return 0 if item.quality < 1
-    return -4 if item.sell_in < 1
-    -2
+    item.sell_in < 1 ? -4 : -2
   end
 end
 
